@@ -25,13 +25,8 @@ function defaultParameterValue(a, b = 100) {
  Функция должна возвращать все переданные в нее аргументы в виде массива
  Количество переданных аргументов заранее неизвестно
  */
-function returnArgumentsArray() {
-  var array = [];
-  for (var i = 0; i < arguments.length; i++) {
-    array.push(arguments[i]);
-  }
-
-  return array;
+function returnArgumentsArray(...args) {
+  return args;
 }
 
 /*
@@ -40,9 +35,6 @@ function returnArgumentsArray() {
  Функция должна принимать другую функцию и возвращать результат вызова переданной функции
  */
 function returnFnResult(fn) {
-  function fn() {
-    return 100;
-  }
   return fn();
 }
 
@@ -64,12 +56,8 @@ function returnCounter(number = 0) {
  Функция должна принимать другую функцию (F) и некоторое количество дополнительных аргументов
  Функция должна привязать переданные аргументы к функции F и вернуть получившуюся функцию
  */
- function bindFunction(fn) {
-   var F = fn.bind(null);
-   for (var i = 1; i < arguments.length; i++) {
-      F = F.bind(null, Number(arguments[i]));
-   }
-
+ function bindFunction(fn, ...args) {
+   var F = fn.bind(null, ...args);
    return F;
  }
 
