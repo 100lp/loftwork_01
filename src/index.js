@@ -9,17 +9,27 @@
  - fn не является функцией (с текстом "fn is not a function")
  Зарпещено использовать встроенные методы для работы с массивами
  */
+
 function isAllTrue(array, fn) {
   if (array.length === 0 || array.constructor !== Array) {
     throw new Error("empty array");
   } else if (typeof fn !== 'function') {
     throw new Error("fn is not a function");
   }
+  var temp;
   try {
     for (var i = 0; i < array.length; i++) {
-      fn(array[i]);
+      // именной в этой задаче мне нужно пройтись абсолютно по всем элементам без исключения
+      // поэтому и решил применить доп переменную
+      if (fn(array[i]) === true) {
+        temp = 'true';
+      } else {
+        temp = 'false';
+      }
     }
-    return true;
+    if (temp == 'true') {
+      return true;
+    }
   } catch (e) {
     console.log(e.message);
   }
@@ -40,6 +50,7 @@ function isSomeTrue(array, fn) {
   } else if (typeof fn !== 'function') {
     throw new Error("fn is not a function");
   }
+
   try {
     for (var i=0; i < array.length; i++) {
       if (fn(array[i]) === true) {
@@ -90,7 +101,7 @@ function findError(data1, data2) {
     return (function() {
 
         for (var i = 0; i < data1.length; i++) {
-            if ( data1[i].toString() !== data2[i].toString() ) {
+            if ( isNaN(data1[i]) !== isNaN(data1[i]) ) {
                 return false;
             }
         }
