@@ -17,7 +17,7 @@ function forEach(array, fn) {
 function map(array, fn) {
   var result = [];
   for (var i = 0; i < array.length; i++) {
-    result[i] = fn(array[i], i, array);
+    result.push(fn(array[i], i, array));
   }
   return result;
 }
@@ -54,7 +54,6 @@ function reduce(array, fn, initial) {
  */
 function deleteProperty(obj, prop) {
   delete obj[prop];
-  return obj;
 }
 
 /*
@@ -75,16 +74,10 @@ function hasProperty(obj, prop) {
  */
 function getEnumProps(obj) {
   var result = [];
-  // ОМГ :D
-  // for (var i = 0; i < args.length; i++) {
-  //   for (var prop in obj) {
-  //     if (prop == args[i]) {
-  //       result.push(prop);
-  //     }
-  //   }
-  // }
   for (var prop in obj) {
-    result.push(prop);
+    if (obj.hasOwnProperty(prop)) {
+      result.push(prop);
+    }
   }
   return result;
 }
@@ -138,6 +131,12 @@ function slice(array, from = 0, to = array.length) {
  Proxy должен перехватывать все попытки записи значений свойств и возводить это значение в квадрат
  */
 function createProxy(obj) {
+  var handler = {
+    set(obj, prop, value) {
+      return obj[prop] = value*value;
+    }
+  };
+  return new Proxy(obj, handler);
 }
 
 export {
