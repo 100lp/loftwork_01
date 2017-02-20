@@ -1,202 +1,278 @@
-/* ДЗ 2 - работа с исключениями и отладчиком */
+/* ДЗ 4 - работа с DOM */
 
-/*
- Задача 1:
- Функция принимает массив и фильтрующую фукнцию и должна вернуть true или false
- Функция должна вернуть true только если fn вернула true для всех элементов массива
- Необходимо выбрасывать исключение в случаях:
- - array не массив или пустой массив (с текстом "empty array")
- - fn не является функцией (с текстом "fn is not a function")
- Зарпещено использовать встроенные методы для работы с массивами
+/**
+ * Функция должна создать элемент с тегом DIV, поместить в него текстовый узел и вернуть получившийся элемент
+ *
+ * @param {string} text - текст, который необходимо поместить в div
+ * @return {Element}
  */
+function createDivWithText(text) {
+  var elDiv = document.createElement('div');
+  elDiv.textContent = text;
 
-function isAllTrue(array, fn) {
-  if (array.length === 0 || array.constructor !== Array) {
-    throw new Error("empty array");
-  } else if (typeof fn !== 'function') {
-    throw new Error("fn is not a function");
+  return elDiv;
+}
+
+/**
+ * Функция должна создать элемент с тегом A, установить значение для атрибута href и вернуть получившийся элемент
+ *
+ * @param {string} hrefValue - значение для атрибута href
+ * @return {Element}
+ */
+function createAWithHref(hrefValue) {
+  var elA = document.createElement('a');
+  elA.setAttribute('href', hrefValue);
+
+  return elA;
+}
+
+/**
+ * Функция должна вставлять элемент what в начало элемента where
+ *
+ * @param {Element} what - что вставлять
+ * @param {Element} where - куда вставлять
+ */
+function prepend(what, where) {
+  where.insertBefore(what, where.firstChild);
+}
+
+/**
+ * Функция должна перебрать все дочерние элементы элемента where
+ * и вернуть массив, состоящий из тех дочерних элементов
+ * следующим соседом которых является элемент с тегом P
+ * Рекурсия - по желанию
+ *
+ * @param {Element} where - где искать
+ * @return {Array<Element>}
+ *
+ * @example
+ * для html '<div></div><p></p><a></a><span></span><p></p>'
+ * функция должна вернуть: [div, span]
+ * т.к. следующим соседом этих элементов является элемент с тегом P
+ */
+function findAllPSiblings(where) {
+  var result = [];
+
+  for (var el of where.children) {
+    if (el.tagName == "P") {
+      result.push(el.previousSibling);
+    }
   }
-  var temp;
-  try {
-    for (var i = 0; i < array.length; i++) {
-      // именной в этой задаче мне нужно пройтись абсолютно по всем элементам без исключения
-      // поэтому и решил применить доп переменную
-      if (fn(array[i]) === true) {
-        temp = 'true';
-      } else {
-        temp = 'false';
-      }
+
+  return result;
+}
+
+/**
+ * Функция должна перебрать все дочерние узлы типа "элемент" внутри where
+ * и вернуть массив, состоящий из текстового содержимого перебираемых элементов
+ * Но похоже, что в код закралась ошибка, которую нужно найти и исправить
+ *
+ * @param {Element} where - где искать
+ * @return {Array<string>}
+ */
+function findError(where) {
+    var result = [];
+
+    for (var child of where.children) {
+        result.push(child.innerText);
     }
-    if (temp == 'true') {
-      return true;
+
+    return result;
+}
+
+/**
+ * Функция должна перебрать все дочерние узлы элемента where
+ * и удалить из него все текстовые узлы
+ * Без рекурсии!
+ * Будьте внимательны при удалении узлов,
+ * можно получить неожиданное поведение при переборе узлов
+ *
+ * @param {Element} where - где искать
+ *
+ * @example
+ * после выполнения функции, дерево <div></div>привет<p></p>loftchool!!!
+ * должно быть преобразовано в <div></div><p></p>
+ */
+function deleteTextNodes(where) {
+  // [...where.childNodes].filter(el => el.nodeType !== el.TEXT_NODE);
+  for (var el of where.childNodes) {
+    if (el.nodeType == el.TEXT_NODE) {
+      where.removeChild(el);
     }
-  } catch (e) {
-    console.log(e.message);
   }
 }
 
-/*
- Задача 2:
- Функция принимает массив и фильтрующую фукнцию и должна вернуть true или false
- Функция должна вернуть true если fn вернула true хотя бы для одного из элементов массива
- Необходимо выбрасывать исключение в случаях:
- - array не массив или пустой массив (с текстом "empty array")
- - fn не является функцией (с текстом "fn is not a function")
- Зарпещено использовать встроенные методы для работы с массивами
+/**
+ * Выполнить предудыщее задание с использование рекурсии
+ * то есть необходимо заходить внутрь каждого дочернего элемента
+ *
+ * @param {Element} where - где искать
+ *
+ * @example
+ * после выполнения функции, дерево <span> <div> <b>привет</b> </div> <p>loftchool</p> !!!</span>
+ * должно быть преобразовано в <span><div><b></b></div><p></p></span>
  */
-function isSomeTrue(array, fn) {
-  if (array.length === 0 || array.constructor !== Array) {
-    throw new Error("empty array");
-  } else if (typeof fn !== 'function') {
-    throw new Error("fn is not a function");
-  }
+function deleteTextNodesRecursive(where) {
+  var el;
 
-  try {
-    for (var i=0; i < array.length; i++) {
-      if (fn(array[i]) === true) {
-        return true;
-      }
+  for (var i = 0; i < where.childNodes.length; i++) {
+    el = where.childNodes[i];
+
+    if (el.nodeType == el.ELEMENT_NODE) {
+      deleteTextNodesRecursive(el);
+    } else {
+      el.remove();
+      i--;
     }
-  } catch (e) {
-    console.log(e.message);
   }
 }
 
-/*
- Задача 3:
- Функция принимает заранее неизветсное количество аргументов, первым из которых является функция fn
- Функция должна поочередно запусти fn для каждого переданного аргумента (кроме самой fn)
- Функция должна вернуть массив аргументов, для которых fn выбросила исключение
- Необходимо выбрасывать исключение в случаях:
- - fn не является функцией (с текстом "fn is not a function")
+/**
+ * *** Со звездочкой ***
+ * Необходимо собрать статистику по всем узлам внутри элемента root и вернуть ее в виде объекта
+ * Статистика должна содержать:
+ * - количество текстовых узлов
+ * - количество элементов каждого класса
+ * - количество элементов каждого тега
+ * Для работы с классами рекомендуется использовать свойство classList
+ * Постарайтесь не создавать глобальных переменных
+ *
+ * @param {Element} root - где собирать статистику
+ * @return {{tags: Object<string, number>, classes: Object<string, number>, texts: number}}
+ *
+ * @example
+ * для html <div class="some-class-1"><b>привет!</b> <b class="some-class-1 some-class-2">loftschool</b></div>
+ * должен быть возвращен такой объект:
+ * {
+ *   tags: { DIV: 1, B: 2},
+ *   classes: { "some-class-1": 2, "some-class-2": 1 },
+ *   texts: 3
+ * }
  */
-function returnBadArguments(fn, ...args) {
-  var badArgs = [];
+ function collectDOMStat(root) {
+   var obj = {
+     tags: {},
+     classes: {},
+     texts: 0
+   };
 
-  if (typeof fn !== 'function') {
-    throw new Error("fn is not a function");
-  }
+   var tagsCollection = [];
+   function scan(root) {
+     var el;
 
-  try {
-    for (var i = 0; i < args.length; i++) {
-      try {
-        fn(args[i]);
-      } catch (e) {
-        badArgs.push(args[i]);
-      }
-    }
-  } catch (e) {
-    console.log(e.message);
-  }
+     for (var i = 0; i < root.childNodes.length; i++) {
+       el = root.childNodes[i];
 
-  return badArgs;
-}
+       if(el.nodeType == el.TEXT_NODE) {
+           obj.texts = obj.texts + 1;
+       }
 
-/*
- Задача 4:
- Используя отладчик и точки остановки, определите в каких случаях if дает true
- Исправьте условие внутри if таким образом, чтобы функция возвращала true
+       if ( el.nodeType == el.ELEMENT_NODE ) {
+         obj.tags[el.tagName] = el.tagName;
+
+         if(el.classList.length > 0) {
+           for (var ii = 0; ii < el.classList.length; ii++) {
+             obj.classes[el.classList[ii]] = el.classList[ii];
+             tagsCollection.push(el.classList[ii]);
+           }
+         } else if (el.className) {
+           obj.classes[el.className] = el.className;
+           tagsCollection.push(el.className);
+         }
+
+         tagsCollection.push(el.tagName);
+
+         scan(el);
+       }
+     }
+   }
+   scan(root);
+
+   for (var tag in obj.tags) {
+     obj.tags[tag] = tagsCollection.filter( el => el == tag).length;
+   }
+
+   for (var prop in obj.classes) {
+     obj.classes[prop] = tagsCollection.filter( el => el == prop).length;
+   }
+
+   return obj;
+ }
+
+/**
+ * *** Со звездочкой ***
+ * Функция должна отслеживать добавление и удаление элементов внутри элемента where
+ * Как только в where добавляются или удаляются элемента,
+ * необходимо сообщать об этом при помощи вызова функции fn со специальным аргументом
+ * В качестве аргумента должен быть передан объек с двумя свойствами:
+ * - type: типа события (insert или remove)
+ * - nodes: массив из удаленных или добавленных элементов (а зависимости от события)
+ * Отслеживание должно работать вне зависимости от глубины создаваемых/удаляемых элементов
+ * Рекомендуется использовать MutationObserver
+ *
+ * @param {Element} where - где отслеживать
+ * @param {function(info: {type: string, nodes: Array<Element>})} fn - функция, которую необходимо вызвать
+ *
+ * @example
+ * если в where или в одного из его детей добавляется элемент div
+ * то fn должна быть вызвана с аргументов:
+ * {
+ *   type: 'insert',
+ *   nodes: [div]
+ * }
+ *
+ * ------
+ *
+ * если из where или из одного из его детей удаляется элемент div
+ * то fn должна быть вызвана с аргументов:
+ * {
+ *   type: 'remove',
+ *   nodes: [div]
+ * }
  */
-function findError(data1, data2) {
-    return (function() {
 
-        for (var i = 0; i < data1.length; i++) {
-            if ( isNaN(data1[i]) !== isNaN(data1[i]) ) {
-                return false;
-            }
+function observeChildNodes(where, fn) {
+   var obj = {};
+   var insertedNodes = [];
+
+   var observer = new MutationObserver( function(mutations) {
+
+     mutations.forEach(function(mutation) {
+        if (mutation.addedNodes.length > 0) {
+          obj.type = 'insert';
+
+          for (var addedNode of mutation.addedNodes) {
+            insertedNodes.push(addedNode);
+          }
         }
 
-        return true;
-    })();
-}
+        if (mutation.removedNodes.length > 0) {
+          obj.type = 'remove';
 
-/*
- Задача 5:
- Функция имеет параметр number (по умолчанию - 0)
- Функция должна вернуть объект, у которого должно быть несколько методов:
- - sum - складывает number с переданным аргументами
- - dif - вычитает из number переданные аргументы
- - div - делит number на первый аргумент. Результат делится на следующий аргумент (если передан) и так далее
- - mul - умножает number на первый аргумент. Результат умножается на следующий аргумент (если передан) и так далее
-
- Количество передаваемых в методы аргументов заранее неизвестно
- Необходимо выбрасывать исключение в случаях:
- - number не является числом (с текстом "number is not a number")
- - какой-либо из аргументов div является нулем (с текстом "division by 0")
- */
-function calculator(number = 0) {
-  var obj = {};
-  var excTest = function(a) {
-    if (a === 0) {
-      throw new Error("division by 0");
-    }
-  };
-
-  if (!Number.isInteger(number)) {
-    throw new Error("number is not a number");
-  } try {
-
-    obj.sum = function(...args) {
-      var result = number;
-      for (var i = 0; i < args.length; i++) {
-        excTest(args[i]);
-        try {
-          result = result + args[i];
-        } catch(e) {
-          console.log(e.message);
+          for (var removedNode of mutation.removedNodes) {
+            insertedNodes.push(removedNode);
+          }
         }
-      }
-      return result;
-    };
-    obj.dif = function(...args) {
-      var result = number;
-      for (var i = 0; i < args.length; i++) {
-        excTest(args[i]);
-        try {
-          result = result - args[i];
-        } catch(e) {
-          console.log(e.message);
-        }
-      }
-      return result;
-    };
-    obj.div = function(...args) {
-      var result = number;
-      for (var i = 0; i < args.length; i++) {
-        excTest(args[i]);
-        try {
-          result = result / args[i];
-        } catch(e) {
-          console.log(e.message);
-        }
-      }
-      return result;
-    };
-    obj.mul = function(...args) {
-      var result = number;
-      for (var i = 0; i < args.length; i++) {
-        excTest(args[i]);
-        try {
-          result = result * args[i];
-        } catch(e) {
-          console.log(e.message);
-        }
-      }
-      return result;
-    };
 
-  } catch(e) {
-    console.log(e.message);
-  }
+        obj.nodes = insertedNodes;
+        fn(obj);
+     });
 
-  return obj;
+   });
+
+   var config = { childList: true, characterData: true, subtree: true };
+   observer.observe(where, config);
 
 }
 
 export {
-    isAllTrue,
-    isSomeTrue,
-    returnBadArguments,
+    createDivWithText,
+    createAWithHref,
+    prepend,
+    findAllPSiblings,
     findError,
-    calculator
+    deleteTextNodes,
+    deleteTextNodesRecursive,
+    collectDOMStat,
+    observeChildNodes
 };
