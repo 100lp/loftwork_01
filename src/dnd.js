@@ -27,11 +27,13 @@ let homeworkContainer = document.querySelector('#homework-container');
 function createDiv() {
   var elem = document.createElement('div');
   elem.setAttribute("class", "draggable-div");
+  // elem.setAttribute("draggable", "true");
   elem.style.backgroundColor = getRandomColor();
+  elem.style.position = 'absolute';
   elem.style.width = getRandomPx(1, 250);
   elem.style.height = getRandomPx(1, 250);
   elem.style.left = getRandomPx(1, 1000);
-  elem.style.top = getRandomPx(1, 1000);
+  elem.style.top = getRandomPx(1, 750);
 
   function getRandomColor() {
     var letters = '0123456789ABCDEF';
@@ -59,6 +61,38 @@ function createDiv() {
  * @param {Element} target
  */
 function addListeners(target) {
+  target.onmousedown = function(e) { // 1. отследить нажатие
+
+    // подготовить к перемещению
+    moveAt(e);
+    // переместим в body, чтобы мяч был точно не внутри position:relative
+    document.body.appendChild(target);
+
+    target.style.zIndex = 1000; // показывать мяч над другими элементами
+
+    // передвинуть мяч под координаты курсора
+    // и сдвинуть на половину ширины/высоты для центрирования
+    function moveAt(e) {
+      target.style.left = e.pageX - target.offsetWidth / 2 + 'px';
+      target.style.top = e.pageY - target.offsetHeight / 2 + 'px';
+    }
+
+    // 3, перемещать по экрану
+    document.onmousemove = function(e) {
+      moveAt(e);
+    };
+
+    // 4. отследить окончание переноса
+    target.onmouseup = function() {
+      document.onmousemove = null;
+      target.onmouseup = null;
+    };
+  };
+
+  // для картинок
+  // target.ondragstart = function() {
+  //   return false;
+  // };
 }
 
 let addDivButton = homeworkContainer.querySelector('#addDiv');
