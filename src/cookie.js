@@ -104,10 +104,8 @@ function getDocumentCookies() {
     return cookieObj;
 }
 
-// Имена всех кук
-let cookieNames = Object.keys(getDocumentCookies());
-
 filterNameInput.addEventListener('keyup', function() {
+  let cookieNames = Object.keys(getDocumentCookies());
   var value = this.value.trim();
   let style = 'margin: 0; font-weight: bold; text-transform: uppercase; font-family: sans-serif; color: blue;';
   filterResult.innerHTML = "";
@@ -124,12 +122,33 @@ filterNameInput.addEventListener('keyup', function() {
   }
 });
 
+// Выгружаем все куки в таблицу при загрузке страницы
 document.addEventListener("DOMContentLoaded", function(){
-  console.log(cookieNames);
+  var obj = getDocumentCookies();
+  var tr;
+
+  let promise = new Promise(function(resolve, reject) {
+    for (let prop in obj) {
+      tr = createCookieTr(prop, obj[prop]);
+      listTable.appendChild(tr);
+    }
+
+    // Resolve
+    resolve();
+  });
+
+  // Вешаем событие удаления на ссылку после ее создания
+  promise.then(function() {
+    var removeLinks = homeworkContainer.querySelectorAll('.removeCookie');
+    removeLinks.forEach(function (link) {
+      removeCookie(link);
+    });
+  });
+
 });
 
 addButton.addEventListener('click', () => {
-  var promise = new Promise(function(resolve, reject) {
+  let promise = new Promise(function(resolve, reject) {
     var tr = createCookieTr(addNameInput.value, addValueInput.value);
 
     if (addNameInput.value.length > 0 && addValueInput.value.length > 0) {
