@@ -8,9 +8,9 @@
  * @param {number} height - высота окна
  * @return {Window}
  */
-// function createWindow(name, width, height) {
-//   return window.open("", name, "`width=${width}, height=${height}`");
-// }
+function createWindow(name, width, height) {
+  return window.open("", name, "`width=${width}, height=${height}`");
+}
 
 /**
  * Функция должна закрывать указанное окно

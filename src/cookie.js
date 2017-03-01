@@ -104,26 +104,26 @@ function getDocumentCookies() {
     return cookieObj;
 }
 
+// Фильтрация
 filterNameInput.addEventListener('keyup', function() {
   let cookieNames = Object.keys(getDocumentCookies());
   var value = this.value.trim();
-  let style = 'margin: 0; font-weight: bold; text-transform: uppercase; font-family: sans-serif; color: blue;';
-  filterResult.innerHTML = "";
+  var obj = getDocumentCookies();
+  var tr;
+
+  // Чистим таблицу перед загрузкой
+  listTable.innerHTML = "";
 
   for (let i=0; i < cookieNames.length; i++) {
     if (isMatching(cookieNames[i], value)) {
-      filterResult.innerHTML += `<p style="${style}">${cookieNames[i]}</p>`;
+      tr = createCookieTr(cookieNames[i], obj[cookieNames[i]]);
+      listTable.appendChild(tr);
     }
-  }
-
-  // Чистим фильтрацию, если инпут пустой
-  if (value.length === 0) {
-    filterResult.innerHTML = "";
   }
 });
 
-// Выгружаем все куки в таблицу при загрузке страницы
-document.addEventListener("DOMContentLoaded", function(){
+// Выгружаем все куки в таблицу
+function loadAllCookies() {
   var obj = getDocumentCookies();
   var tr;
 
@@ -144,22 +144,22 @@ document.addEventListener("DOMContentLoaded", function(){
       removeCookie(link);
     });
   });
+}
 
+// Загружаем все куки при загрузке страницы
+document.addEventListener("DOMContentLoaded", function(){
+  loadAllCookies();
 });
 
+// Форма добавления
 addButton.addEventListener('click', () => {
   let promise = new Promise(function(resolve, reject) {
-    var tr = createCookieTr(addNameInput.value, addValueInput.value);
-
     if (addNameInput.value.length > 0 && addValueInput.value.length > 0) {
-
-      // Добавляем данные в таблицу
-      listTable.appendChild(tr);
 
       // Создаем куку
       document.cookie = `${addNameInput.value}=${addValueInput.value}`;
 
-      // Чисти инпуты
+      // Чистим инпуты
       addNameInput.value = "";
       addValueInput.value = "";
 
@@ -173,8 +173,18 @@ addButton.addEventListener('click', () => {
 
   // Вешаем событие удаления на ссылку после ее создания
   promise.then(function() {
+
+    // Чисти инпут фильтрации перед загрузкой
+    filterNameInput.value = "";
+
+    // Чистим таблицу перед загрузкой
+    listTable.innerHTML = "";
+
+    // Загружаем данные в таблицу
+    loadAllCookies();
+
     var removeLinks = homeworkContainer.querySelectorAll('.removeCookie');
-    removeLinks.forEach(function (link) {
+    removeLinks.forEach(function(link) {
       removeCookie(link);
     });
   });
