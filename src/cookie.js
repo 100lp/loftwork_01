@@ -63,129 +63,124 @@ function isMatching(full, chunk) {
  * @param name - имя cookie
  * @param value - значение cookie
  */
-function createCookieTr(name, value) {
-  var tr = document.createElement('tr');
-  tr.innerHTML = `<th>${name}</th>
-                  <th>${value}</th>
-                  <th><a style="color: red; cursor: pointer;" href="#" class="removeCookie">удалить</a></th>`;
-  return tr;
-}
 
-// Инструмент для удаления
-function removeCookie(link) {
-  link.addEventListener('click', (e) => {
+ // Загружаем все куки при загрузке страницы
+ document.addEventListener("DOMContentLoaded", function(){
+   loadAllCookies();
+ });
 
-    // Удаляем из таблицы
-    e.target.parentElement.parentElement.remove();
+ // Выгружаем все куки в таблицу
+ function loadAllCookies() {
+   var obj = getCookies();
 
-    // Удаляем куку
-    var name = e.target.parentElement.previousElementSibling.previousElementSibling.textContent;
-    document.cookie = `${name}=""; expires=${new Date(0)}`;
-  });
-}
+   // Чистим таблицу перед загрузкой
+   listTable.innerHTML = "";
 
-// Инструмент для поиска куки
-// (скопировал из интернета для экономии времени)
-function getDocumentCookies() {
-    var theCookies = document.cookie.split(';'),
-        cookieObj = {},
-        tmp, tmpName, tmpVal;
-    for (let i = 1 ; i <= theCookies.length; i++) {
-        tmp = theCookies[i-1].split('=');
-        tmpName = decodeURIComponent(tmp[0].trim());
-        tmpVal = decodeURIComponent(tmp[1].trim());
-        if ( tmpName.indexOf('[') > -1 && tmpName.indexOf(']') > -1 ) {
-            cookieObj[tmpName.split('[')[0]] = cookieObj[tmpName.split('[')[0]] || {};
-            cookieObj[tmpName.split('[')[0]][tmpName.split('[')[1].replace(']', '')] = tmpVal;
-        } else {
-            cookieObj[tmpName] = tmpVal;
-        }
-    }
-    return cookieObj;
-}
+   for (let prop in obj) {
+     createCookieTr(prop, obj[prop]);
+   }
+
+   // Вешаем событие удаления на ссылку после ее создания
+   var removeLinks = homeworkContainer.querySelectorAll('.removeCookie');
+
+   removeLinks.forEach(function(link) {
+     link.addEventListener('click', (e) => {
+       var name = e.target.parentElement.previousElementSibling.previousElementSibling.textContent;
+
+       // Удаляем из таблицы
+       deleteCookieTr(e);
+
+       // Удаляем из браузера
+       deleteCookie(name);
+
+     });
+   });
+
+ }
+
 
 // Фильтрация
 filterNameInput.addEventListener('keyup', function() {
-  let cookieNames = Object.keys(getDocumentCookies());
+  let cookieNames = Object.keys(getCookies());
   var value = this.value.trim();
-  var obj = getDocumentCookies();
-  var tr;
+  var obj = getCookies();
 
   // Чистим таблицу перед загрузкой
   listTable.innerHTML = "";
 
   for (let i=0; i < cookieNames.length; i++) {
-    if (isMatching(cookieNames[i], value)) {
-      tr = createCookieTr(cookieNames[i], obj[cookieNames[i]]);
-      listTable.appendChild(tr);
+    if (isMatching(cookieNames[i], value) && value !== addNameInput.value) {
+      createCookieTr(cookieNames[i], obj[cookieNames[i]]);
     }
   }
-});
 
-// Выгружаем все куки в таблицу
-function loadAllCookies() {
-  var obj = getDocumentCookies();
-  var tr;
-
-  let promise = new Promise(function(resolve, reject) {
-    for (let prop in obj) {
-      tr = createCookieTr(prop, obj[prop]);
-      listTable.appendChild(tr);
-    }
-
-    // Resolve
-    resolve();
-  });
-
-  // Вешаем событие удаления на ссылку после ее создания
-  promise.then(function() {
-    var removeLinks = homeworkContainer.querySelectorAll('.removeCookie');
-    removeLinks.forEach(function (link) {
-      removeCookie(link);
-    });
-  });
-}
-
-// Загружаем все куки при загрузке страницы
-document.addEventListener("DOMContentLoaded", function(){
-  loadAllCookies();
+  console.log('sfsa', value);
 });
 
 // Форма добавления
 addButton.addEventListener('click', () => {
-  let promise = new Promise(function(resolve, reject) {
-    if (addNameInput.value.length > 0 && addValueInput.value.length > 0) {
 
-      // Создаем куку
-      document.cookie = `${addNameInput.value}=${addValueInput.value}`;
+  // Проверяем что инпуты не пустые
+  if (addNameInput.value.length > 0 && addValueInput.value.length > 0) {
+    // Создаем куку
+    document.cookie = `${addNameInput.value}=${addValueInput.value}`;
+  } else {
+    alert("нельзя добавить пустое поле");
+  }
 
-      // Чистим инпуты
-      addNameInput.value = "";
-      addValueInput.value = "";
+  loadAllCookies();
 
-      // Resolve
-      resolve();
-
-    } else {
-      alert("нельзя добавить пустое поле");
-    }
-  });
-
-  // Вешаем событие удаления на ссылку после ее создания
-  promise.then(function() {
-
-    // Чисти инпут фильтрации перед загрузкой
-    filterNameInput.value = "";
-
-    // Чистим таблицу перед загрузкой
-    listTable.innerHTML = "";
-
-    // Загружаем данные в таблицу
-    loadAllCookies();
-
-    var removeLinks = homeworkContainer.querySelectorAll('.removeCookie');
-    removeLinks.forEach(function(link) {
-      removeCookie(link);
-    });
-  });
 });
+
+// :::::::::::::::::::::::::::::
+// :::::::: ИНСТРУМЕНТЫ ::::::::
+// :::::::::::::::::::::::::::::
+
+// Удалить куку
+function deleteCookie(name) {
+  document.cookie = `${name}=""; expires=${new Date(0)}`;
+}
+
+// Удаляем из таблицы
+function deleteCookieTr(e) {
+  e.target.parentElement.parentElement.remove();
+}
+
+// Получить куки в виде объекта
+// import getCookies from '../test/2-cookie.js';
+function getCookies() {
+   return document.cookie
+     .split('; ')
+     .filter(Boolean)
+     .map(cookie => cookie.match(/^([^=]+)=(.+)/))
+     .reduce((obj, [, name, value]) => {
+       obj[name] = value;
+
+       return obj;
+   }, {});
+}
+
+// Создаем строчку с кукой в таблице
+function createCookieTr(name, value) {
+  var tr = document.createElement('tr');
+  tr.innerHTML = `<th>${name}</th>
+                  <th>${value}</th>
+                  <th><button style="color: red; cursor: pointer;" class="removeCookie">удалить</button></th>`;
+
+  listTable.appendChild(tr);
+}
+
+
+
+
+// Инструмент для удаления
+// function removeCookie(link) {
+//   link.addEventListener('click', (e) => {
+//     // Удаляем из таблицы
+//     e.target.parentElement.parentElement.remove();
+//
+//     // Удаляем куку
+//     var name = e.target.parentElement.previousElementSibling.previousElementSibling.textContent;
+//     document.cookie = `${name}=""; expires=${new Date(0)}`;
+//   });
+// }
